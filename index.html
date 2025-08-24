@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory Numbers Practice</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    #timer {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .grid, .input-grid {
+      background: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .number-row, .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 8px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 6px;
+      border-radius: 4px;
+    }
+    .row-label {
+      width: 70px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .number-text {
+      font-size: 32px; /* ← 数字を大きく強調 */
+      white-space: pre;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .digit-input {
+      width: 24px;
+      height: 30px;
+      text-align: center;
+      font-size: 18px;
+      font-family: monospace;
+    }
+    .correct {
+      background-color: #c8f7c5;
+    }
+    .wrong {
+      background-color: #f7c5c5;
+    }
+    .correction {
+      color: red;
+      font-weight: bold;
+      margin-left: 4px;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      margin: 10px 5px;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .digit-input {
+        width: 20px;
+        height: 26px;
+        font-size: 16px;
+      }
+      .row-label {
+        width: 60px;
+        font-size: 14px;
+      }
+      .number-text {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Memory Numbers Practice</h1>
+<div id="timer">🕒 05:00</div>
+
+<div class="grid hidden" id="numberGrid"></div>
+<div class="input-grid hidden" id="inputGrid"></div>
+
+<div>
+  <button id="startBtn" onclick="startSession()">開始</button>
+  <button id="recallBtn" class="hidden" onclick="switchToInput()">回答する</button>
+  <button id="checkBtn" class="hidden" onclick="checkAnswers()">答え合わせ</button>
+  <button onclick="resetPage()">リセット</button>
+</div>
+
+<script>
+  const rows = 21;
+  const cols = 40;
+  const duration = 5 * 60;
+  let numbers = [];
+  let timerInterval;
+
+  function generateNumbers() {
+    numbers = [];
+    for (let i = 0; i < rows; i++) {
+      let row = "";
+      for (let j = 0; j < cols; j++) {
+        row += Math.floor(Math.random() * 10).toString();
+      }
+      numbers.push(row);
+    }
+  }
+
+  function displayNumbers() {
+    const grid = document.getElementById("numberGrid");
+    grid.innerHTML = "";
+    numbers.forEach((row, index) => {
+      const div = document.createElement("div");
+      div.className = "number-row";
+      const label = document.createElement("div");
+      label.className = "row-label";
+      label.textContent = `Row ${index + 1}`;
+      const text = document.createElement("div");
+      text.className = "number-text";
+      text.textContent = row;
+      div.appendChild(label);
+      div.appendChild(text);
+      grid.appendChild(div);
+    });
+  }
+
+  function startSession() {
+    generateNumbers();
+    displayNumbers();
+    document.getElementById("numberGrid").classList.remove("hidden");
+    document.getElementById("recallBtn").classList.remove("hidden");
+    document.getElementById("startBtn").disabled = true;
+    startTimer(duration);
+  }
+
+  function startTimer(seconds) {
+    let remaining = seconds;
+    const timerDisplay = document.getElementById("timer");
+    timerInterval = setInterval(() => {
+      const min = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const sec = String(remaining % 60).padStart(2, '0');
+      timerDisplay.textContent = `🕒 ${min}:${sec}`;
+      remaining--;
+      if (remaining < 0) {
+        clearInterval(timerInterval);
+        switchToInput();
+      }
+    }, 1000);
+  }
+
+  function switchToInput() {
+    clearInterval(timerInterval);
+    document.getElementById("numberGrid").classList.add("hidden");
+    document.getElementById("inputGrid").classList.remove("hidden");
+    document.getElementById("recallBtn").classList.add("hidden");
+    document.getElementById("checkBtn").classList.remove("hidden");
+
+    const inputGrid = document.getElementById("inputGrid");
+    inputGrid.innerHTML = "";
+
+    for (let i = 0; i < rows; i++) {
+      const div = document.createElement("div");
+      div.className = "input-row";
+
+      const label = document.createElement("div");
+      label.className = "row-label";
+      label.textContent = `Row ${i + 1}`;
+      div.appendChild(label);
+
+      for (let j = 0; j < cols; j++) {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = 1;
+        input.className = "digit-input";
+        input.dataset.row = i;
+        input.dataset.col = j;
+
+        input.addEventListener("keyup", function (e) {
+          if (this.value.length === 1 && e.key !== "Backspace") {
+            const inputs = document.querySelectorAll(".digit-input");
+            const nextIndex = Array.from(inputs).indexOf(this) + 1;
+            if (inputs[nextIndex]) inputs[nextIndex].focus();
+          }
+        });
+
+        div.appendChild(input);
+      }
+
+      inputGrid.appendChild(div);
+    }
+  }
+
+  function checkAnswers() {
+    const inputs = document.querySelectorAll(".digit-input");
+    inputs.forEach(input => {
+      const row = parseInt(input.dataset.row);
+      const col = parseInt(input.dataset.col);
+      const correct = numbers[row][col];
+      const value = input.value;
+
+      const existingCorrection = input.nextSibling;
+      if (existingCorrection && existingCorrection.classList?.contains("correction")) {
+        existingCorrection.remove();
+      }
+
+      if (value === correct) {
+        input.classList.add("correct");
+        input.classList.remove("wrong");
+      } else {
+        input.classList.add("wrong");
+        input.classList.remove("correct");
+
+        const correction = document.createElement("span");
+        correction.className = "correction";
+        correction.textContent = correct;
+        input.parentNode.insertBefore(correction, input.nextSibling);
+      }
+    });
+  }
+
+  function resetPage() {
+    location.reload();
+  }
+</script>
+
+</body>
+</html>
