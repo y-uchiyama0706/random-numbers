@@ -30,7 +30,7 @@
       padding: 6px;
       border: 1px solid #ccc;
       max-height: 80vh;
-      overflow-y: auto; /* 横スクロールなし */
+      overflow-y: auto;
       box-sizing: border-box;
       width: 95vw;
       max-width: 100%;
@@ -72,7 +72,7 @@
     }
 
     .digit-input {
-      width: 4vw;    /* 少し小さく */
+      width: 4vw;
       height: 6vw;
       text-align: center;
       font-size: 3.2vw;
@@ -92,10 +92,11 @@
     .correction {
       color: red;
       font-weight: bold;
-      margin-left: 4px;
+      margin-left: 0;
+      margin-top: 2px;
       font-size: 3vw;
-      min-width: 1ch;
-      display: inline-block;
+      min-width: auto;
+      display: block; /* 下に表示 */
     }
 
     .hidden {
@@ -177,7 +178,6 @@
       const text = document.createElement("div");
       text.className = "number-text";
 
-      // 10文字ごとに改行
       text.textContent = row.match(/.{1,10}/g).join("\n");
 
       div.appendChild(label);
