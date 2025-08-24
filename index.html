@@ -60,15 +60,21 @@
     .sub-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 2px;
+      gap: 4px;
       margin-bottom: 4px;
-      align-items: center;
+      align-items: flex-start;
     }
 
     .sub-label {
       width: 12vw;
       font-size: 3vw;
       font-weight: bold;
+    }
+
+    .digit-container {
+      display: flex;
+      flex-direction: column; /* 入力欄と正解/誤答を縦に並べる */
+      align-items: center;
     }
 
     .digit-input {
@@ -92,11 +98,12 @@
     .correction {
       color: red;
       font-weight: bold;
-      margin-left: 0;
       margin-top: 2px;
+      display: block; /* 下に表示 */
       font-size: 3vw;
       min-width: auto;
-      display: block; /* 下に表示 */
+      text-align: center;
+      line-height: 1.2;
     }
 
     .hidden {
@@ -177,7 +184,6 @@
 
       const text = document.createElement("div");
       text.className = "number-text";
-
       text.textContent = row.match(/.{1,10}/g).join("\n");
 
       div.appendChild(label);
@@ -240,6 +246,10 @@
 
         for (let j = 0; j < 8; j++) {
           const colIndex = k * 8 + j;
+
+          const container = document.createElement("div");
+          container.className = "digit-container";
+
           const input = document.createElement("input");
           input.type = "text";
           input.maxLength = 1;
@@ -263,7 +273,11 @@
             }
           });
 
-          subRow.appendChild(input);
+          const correction = document.createElement("span");
+          correction.className = "correction";
+          container.appendChild(input);
+          container.appendChild(correction);
+          subRow.appendChild(container);
         }
 
         rowContainer.appendChild(subRow);
@@ -281,25 +295,17 @@
       const correct = numbers[row][col];
       const value = input.value;
 
-      const existingCorrection = input.nextSibling;
-      if (existingCorrection && existingCorrection.classList?.contains("correction")) {
-        existingCorrection.remove();
-      }
-
-      const correction = document.createElement("span");
-      correction.className = "correction";
+      const correction = input.parentNode.querySelector(".correction");
 
       if (value === correct) {
         input.classList.add("correct");
         input.classList.remove("wrong");
-        correction.textContent = " "; // 正解時は空白
+        correction.textContent = " "; // 正解は空白
       } else {
         input.classList.add("wrong");
         input.classList.remove("correct");
-        correction.textContent = correct; // 間違い時は正しい数字
+        correction.textContent = correct; // 誤答は正しい数字
       }
-
-      input.parentNode.insertBefore(correction, input.nextSibling);
     });
   }
 
