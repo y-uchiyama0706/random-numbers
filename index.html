@@ -14,18 +14,29 @@
       font-weight: bold;
       margin-bottom: 20px;
     }
-    .grid, .input-grid {
+    .grid {
       background: white;
-      padding: 10px;
+      padding: 6px;
       border: 1px solid #ccc;
       max-height: 80vh;
       overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .input-grid {
+      background: white;
+      padding: 6px;
+      border: 1px solid #ccc;
+      max-height: 80vh;
+      overflow-x: auto; /* 横スクロールは必要に応じて */
+      box-sizing: border-box;
+      display: inline-block; /* 幅を内容に合わせる */
+      max-width: fit-content;
     }
     .number-row, .input-row {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       background-color: #fff;
       border: 1px solid #ddd;
-      padding: 6px;
+      padding: 4px;
       border-radius: 4px;
     }
     .row-label {
@@ -36,7 +47,7 @@
     .number-text {
       font-size: 32px;
       font-weight: bold;
-      white-space: pre;
+      white-space: pre-wrap; /* 改行を反映 */
       letter-spacing: 1px;
     }
     .sub-row {
@@ -135,12 +146,17 @@
     numbers.forEach((row, index) => {
       const div = document.createElement("div");
       div.className = "number-row";
+
       const label = document.createElement("div");
       label.className = "row-label";
       label.textContent = `Row ${index + 1}`;
+
       const text = document.createElement("div");
       text.className = "number-text";
-      text.textContent = row;
+
+      // 10文字ごとに改行
+      text.textContent = row.match(/.{1,10}/g).join("\n");
+
       div.appendChild(label);
       div.appendChild(text);
       grid.appendChild(div);
