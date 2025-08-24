@@ -22,26 +22,34 @@
       overflow-y: auto;
     }
     .number-row, .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 2px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       background-color: #fff;
       border: 1px solid #ddd;
       padding: 6px;
       border-radius: 4px;
     }
     .row-label {
-      width: 70px;
       font-weight: bold;
       font-size: 16px;
+      margin-bottom: 4px;
     }
     .number-text {
-      font-size: 32px; /* ← 数字を大きく強調 */
-      white-space: pre;
+      font-size: 32px;
       font-weight: bold;
+      white-space: pre;
       letter-spacing: 1px;
+    }
+    .sub-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      margin-bottom: 4px;
+      align-items: center;
+    }
+    .sub-label {
+      width: 60px;
+      font-size: 14px;
+      font-weight: bold;
     }
     .digit-input {
       width: 24px;
@@ -75,8 +83,11 @@
         height: 26px;
         font-size: 16px;
       }
+      .sub-label {
+        width: 50px;
+        font-size: 12px;
+      }
       .row-label {
-        width: 60px;
         font-size: 14px;
       }
       .number-text {
@@ -171,34 +182,47 @@
     inputGrid.innerHTML = "";
 
     for (let i = 0; i < rows; i++) {
-      const div = document.createElement("div");
-      div.className = "input-row";
+      const rowContainer = document.createElement("div");
+      rowContainer.className = "input-row";
 
       const label = document.createElement("div");
       label.className = "row-label";
       label.textContent = `Row ${i + 1}`;
-      div.appendChild(label);
+      rowContainer.appendChild(label);
 
-      for (let j = 0; j < cols; j++) {
-        const input = document.createElement("input");
-        input.type = "text";
-        input.maxLength = 1;
-        input.className = "digit-input";
-        input.dataset.row = i;
-        input.dataset.col = j;
+      for (let k = 0; k < 5; k++) {
+        const subRow = document.createElement("div");
+        subRow.className = "sub-row";
 
-        input.addEventListener("keyup", function (e) {
-          if (this.value.length === 1 && e.key !== "Backspace") {
-            const inputs = document.querySelectorAll(".digit-input");
-            const nextIndex = Array.from(inputs).indexOf(this) + 1;
-            if (inputs[nextIndex]) inputs[nextIndex].focus();
-          }
-        });
+        const subLabel = document.createElement("div");
+        subLabel.className = "sub-label";
+        subLabel.textContent = `R${i + 1}-${k + 1}`;
+        subRow.appendChild(subLabel);
 
-        div.appendChild(input);
+        for (let j = 0; j < 8; j++) {
+          const colIndex = k * 8 + j;
+          const input = document.createElement("input");
+          input.type = "text";
+          input.maxLength = 1;
+          input.className = "digit-input";
+          input.dataset.row = i;
+          input.dataset.col = colIndex;
+
+          input.addEventListener("keyup", function (e) {
+            if (this.value.length === 1 && e.key !== "Backspace") {
+              const inputs = document.querySelectorAll(".digit-input");
+              const nextIndex = Array.from(inputs).indexOf(this) + 1;
+              if (inputs[nextIndex]) inputs[nextIndex].focus();
+            }
+          });
+
+          subRow.appendChild(input);
+        }
+
+        rowContainer.appendChild(subRow);
       }
 
-      inputGrid.appendChild(div);
+      inputGrid.appendChild(rowContainer);
     }
   }
 
